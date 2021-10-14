@@ -1,0 +1,10 @@
+﻿<?xml version='1.0' encoding='UTF-8'?>
+<svg viewBox="-6 -4 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g id="Layer_1" transform="translate(6, -4) rotate(180, 4, 16)" style="enable-background:new 0 0 32 32">
+    <g transform="matrix(-1, 0, 0, 1, 20, 0)">
+      <g id="Arrow1Down">
+        <path d="M14, 4L14, 18L13.3, 18L6, 18L16, 28L26, 18L18.7, 18L18, 18L18, 4L14, 4z" fill="#1177D7" id="Group_Selection_2_" class="Blue" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CssEditor</title>
+	<script src="jquery.js"></script>
+	<link rel="stylesheet" type="text/css" href="animate.css">
+	<style type="text/css">
+
+html,body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	font-family: segoe ui,arial;
+	color: white;
+	background-image: url(bg.jpg);
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+#screen {
+	display: block;
+	position: fixed;
+	max-width: 60%;
+	width: 50%;
+	height: 70%;
+	top: 10%;
+	right: 5%;
+	border-top: 14px solid white;
+	border-bottom: 20px solid grey;
+	border-left: 10px solid yellowgreen;
+	border-top-left-radius: 4px;
+	border-bottom-left-radius: 8px;
+	color: black;
+	background-color: rgba(255,255,255,0.8);
+	font-size: 26px;
+	animation: fadeIn 1s ease-out;
+}
+
+.props-container {
+	display: flex;
+	position: fixed;
+	flex-direction: column;
+	align-items: center;
+	border: 6px solid skyblue;
+	border-radius: 8px;
+	width: 26%;
+	height: 80%;
+	top: 10%;
+	margin: 0 5%;
+	padding: 22px 1.5cm;
+	transition: 1s;
+	overflow-y: auto;
+	animation: pulse 1s ease-out;
+}
+
+::-webkit-scrollbar {
+	display: none;
+}
+
+#icons-container {
+	display: flex;
+	align-items: center;
+	position: fixed;
+	width: 50%;
+	height: 8%;
+	bottom: 4%;
+	right: 5%;
+	border-radius: 16px;
+	background-color: transparent;
+	animation: slideInRight 1.2s ease-out;
+}
+
+
+#search-prop {
+	display: block;
+	position: sticky;
+	top: -10px;
+	width: 70%;
+	margin: 2% auto;
+	padding: 9px 0;
+	border: 2px solid silver;
+	border-radius: 8px;
+	color: white;
+	text-align: center;
+	font-size: 18px;
+	background: darkgrey;
+}
+
+.props {
+	width: 100%;
+	margin: 1% 0;
+	padding: 10px 0;
+	color: white;
+	font-size: 20px;
+	text-align: center;
+	border-radius: 4px;
+	border: 2px solid cornflowerblue;
+	background: transparent;
+	transition: 0.26s;
+}
+
+.props:hover {
+	background-color: rgba(255,255,255,0.34);
+}
+
+#classname,#idname,#undo,#redo,#files,#remove,#copy,#edit {
+	width: 7%;
+	height: 80%;
+	margin: 10px;
+	border: none;
+	border-radius: 50%;
+	color: white;
+	font-size: 20px;
+	text-align: center;
+	transition: 0.89s;
+	background: transparent;
+	background-size: cover;
+}
+
+#classname {background-image: url(add.svg);}
+#idname {background-image: url(add.svg);}
+#undo {background-image: url(up.svg); transform: rotate(-45deg);}
+#redo {background-image: url(down.svg); transform: rotate(-45deg);}
+#files {background-image: url(files.svg);}
+#remove {background-image: url(remove.svg);}
+#copy {background-image: url(copy.svg);}
+#edit {background-color: green;}
+
+#classname:hover,#idname:hover {
+	width: 12%;
+	border-radius: 8px;
+	background-color: grey;
+	background-image: none;
+}
+
+.active { background-color: red!important; }
+
+</style>
+
+<script type="text/javascript">
+
+let ismanual = false;
+var undo = "";
+var redo = "";
+let allblocks = [];
+let removealltext = "unset";
+let allprops = ["position","display","width","height","margin","padding","top","left","border","border-radius"]
+
+function insertcode(x) {
+	let scr = document.getElementById("screen");
+	let scrtext = scr.innerHTML;
+	let codeline = "    " + allprops[x] + ":"+ event.currentTarget.value + ";\n}";
+	undo = ""; undo = codeline; redo = ""; redo = undo;
+	scrtext = scrtext.replace("}",codeline);
+	scr.innerHTML = scrtext;
+	$('.props').val("");
+}
+
+function newblock(c) {
+	let scr = document.getElementById("screen");
+	let identifyr = (c==1) ? "." : "#";
+	let block = identifyr + event.currentTarget.value + " {\n}\n\n";
+	allblocks.push(block);
+	scr.prepend(block);
+	// console.log("..new block inserted .."+allblocks);
+}
+
+function undolast() {
+	let scr = document.getElementById('screen');
+	scrtext = scr.innerHTML;
+	scrtext = (undo.length > 0) ? scrtext.replace(undo, "}") : scrtext;
+	scr.innerHTML = scrtext;
+	if(undo == removealltext) {
+		scr.innerHTML = removealltext;
+	}
+}
+
+function redolast() {
+	let scr = document.getElementById('screen');
+	scrtext = scr.innerHTML;
+	scrtext = scrtext.replace("}", redo);
+	scr.innerHTML = scrtext;
+	if(redo == removealltext) {
+		scr.innerHTML = "";
+	}
+}
+
+function copyall() {
+	let copy = $("#screen").text();
+	alert(copy);
+}
+
+function removeblock() {
+	removealltext = $("#screen").text();
+	undo = ""; undo = removealltext;
+	redo = ""; redo = undo;
+	$("#screen").empty();
+	console.log("..removed all text..");
+}
+
+function editmanual() {
+	if(ismanual) {
+		document.getElementById('screen').setAttribute("disabled","disabled"); ismanual = false;
+		console.log('exiting manual edit mode..');
+	} else {
+		document.getElementById('screen').removeAttribute("disabled"); ismanual = true;
+		console.log('entering manual edit mode..');
+	}
+}
+
+function showsearchprops() {
+	var resultindex;
+	var resultitem;
+	const alldivs = document.querySelectorAll('.props');
+	var searchq = event.currentTarget.value;
+	for (let i = 0; i < allprops.length; i++) {
+		if(searchq == allprops[i]) {
+			resultindex = i;
+			// console.log('found search result in '+allprops[i]);
+		} 
+	}
+	for (let j = 0; j < alldivs.length; j++){
+		if(searchq == $(alldivs[j]).attr("placeholder")) {
+			resultitem = alldivs[j];
+			console.log("matched the target element..");
+		} else {
+			alldivs[j].style.order = '0';
+		}
+	}
+	if(resultitem) {resultitem.style.order = '-1'; resultitem.focus();}
+	// else alert('no matched item..');
+	console.log(resultitem);
+}
+
+
+</script>
+</head>
+<body>
+
+<textarea id="screen" disabled="disabled"></textarea>
+
+<div id="icons-container">
+  <input type="text" id="classname" onchange="newblock(1);this.value='';">
+  <input type="text" id="idname" onchange="newblock(2);this.value='';">
+  <button id="undo" onclick="undolast();"></button>
+  <button id="redo" onclick="redolast();"></button>
+  <button id="files" onclick="getfiles();"></button>
+  <button id="remove" onclick="removeblock();"></button>
+  <button id="copy" onclick="copyall();"></button>
+  <button id="edit" onclick="editmanual();$(this).toggleClass('active');"></button>
+</div>
+
+<div class="props-container">
+	<input type="text" id="search-prop" placeholder="search props.." onchange="showsearchprops();" onfocus="console.log($(this).val(''));">
+	<input class="props" placeholder="position" onchange="insertcode(0);">
+	<input class="props" placeholder="display" onchange="insertcode(1);">
+	<input class="props" placeholder="width" onchange="insertcode(2);">
+	<input class="props" placeholder="height" onchange="insertcode(3);">
+	<input class="props" placeholder="margin" onchange="insertcode(4);">
+	<input class="props" placeholder="padding" onchange="insertcode(5);">
+	<input class="props" placeholder="top" onchange="insertcode(6);">
+	<input class="props" placeholder="left" onchange="insertcode(7);">
+	<input class="props" placeholder="border" onchange="insertcode(8);">
+	<input class="props" placeholder="border-radius" onchange="insertcode(9);">
+	<input class="props" placeholder="top" onchange="insertcode(6);">
+	<input class="props" placeholder="left" onchange="insertcode(7);">
+	<input class="props" placeholder="border" onchange="insertcode(8);">
+	<input class="props" placeholder="border-radius" onchange="insertcode(9);">
+	<input class="props" placeholder="border-radius" onchange="insertcode(9);">
+	<input class="props" placeholder="top" onchange="insertcode(6);">
+	<input class="props" placeholder="left" onchange="insertcode(7);">
+	<input class="props" placeholder="border" onchange="insertcode(8);">
+	<input class="props" placeholder="border-radius" onchange="insertcode(9);">
+</div>
+
+</body>
+</html>
